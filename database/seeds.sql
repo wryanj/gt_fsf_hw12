@@ -8,8 +8,8 @@ INSERT INTO department_table (
 ) VALUES
     ("Management"),
     ("Offense"),
-    ("Offense"),
-    ("Defense");
+    ("Defense"),
+    ("Special Teams");
 
 
 -- Seeds for Role Table

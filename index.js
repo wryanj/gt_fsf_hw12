@@ -55,12 +55,17 @@
         nextStep="";
         // Welcome the User
         console.log(`Welcome to the employee tracker! Choose from below to get started. When your finished, select "fininsh session" `);
+        // Invoke the start main prompt function
+        startMainPrompt();
     }
 
     // Declare choose again function to be invoked every time a user finishes a given operation
-    function chooseNext(){
-        console.log(`You have complted this task`);
-        promptUserMain();
+    function taskCompleted(){
+        // Reset the next step variable...
+        nextStep="";
+        // Provide a note the task is completed..
+        console.log(`You have complted this task. You may now select what to do next`);
+        
     }
 
 //-------------------------------------------------------------------------------------------------------------
@@ -68,7 +73,7 @@
 //-------------------------------------------------------------------------------------------------------------
 
     // Declare main promptUser function for letting people choose what they would like to do...
-    function promptUserMain () {
+    function mainPrompt () {
         return inquirer.prompt ([
             {
                 type: "list",
@@ -86,7 +91,7 @@
     }
 
     // Declare prompts to allow for selection what information they specifically want to view...
-    function promptUserViewInfo() {
+    function viewInfoPrompt () {
         return inquirer.prompt ([
             {
                 type: "list",
@@ -104,7 +109,7 @@
     }
 
     // Declare prompts to allow them to select what information they specifically want to add...
-    function promptUserAddInfo () {
+    function addInfoPrompt () {
         return inquirer.prompt ([
             {
                 type: "list",
@@ -120,7 +125,7 @@
     }
 
         // Declare prompt if user chooses to add A new department...
-        function promptUserAddDepartment () {
+        function addDepartmentPrompt () {
             return inquirer.prompt ([
                 {
                     type: "input",
@@ -137,7 +142,7 @@
         }
 
         // Declare prompt if a user chooses to add A new role...
-        function promptUserAddRole () {
+        function addRolePrompt () {
             return inquirer.prompt ([
                 {
                     type: "list",
@@ -178,7 +183,7 @@
         }
 
         // Declare prompt if a user chooses to add A new employee...
-        function promptUserAddEmployee () {
+        function addEmployeePrompt () {
             return inquirer.prompt ([
                 {
                     type: "input",
@@ -217,11 +222,14 @@
 // DEFINE PROGRAM SEQUENCE
 //-------------------------------------------------------------------------------------------------------------
 
-// Upon start (entry of node index.js in CLI)... welcome them with a message....
+// Upon start, present a message and invoke the startMainPrompt function
 init();
 
-// Prompt the user what they want to do (get their main selection)...
-promptUserMain()
+// Start the main prompt sequence
+function startMainPrompt () {
+
+    // Presnt the main prompt questions...
+    mainPrompt()
 
     // Then capture the response in a nextStep global variable and invoke the next function to route them to the right prompt..
     .then(response => {
@@ -232,6 +240,9 @@ promptUserMain()
 
     // If there is an error, log the error
     .catch(err => {if (err) throw err});
+}
+
+    
 
 
 // Depending on their main selection, direct them to the appropriate next steps
@@ -241,7 +252,7 @@ function directUserFromMain () {
     if (nextStep == "View departments, roles, or employees") {
 
         // Prompt them which info they would like to view
-        promptUserViewInfo()
+        viewInfoPrompt()
 
             // Then capture the response and invoke the direct user from view info function
             .then (response => {
@@ -254,14 +265,19 @@ function directUserFromMain () {
             .catch(err => {if (err) throw err});
     }
     if (nextStep == "Add new departments, roles, or employees") {
-        promptUserAddInfo();
+        addInfoPrompt();
     }
     if (nextStep == "Update roles for an employee") {
-        promptUserUpdateInfo();
+       // updateInfoPrompt(); - Have to add these into inquiere. 
     }
+    if (nextStep == "Finish session") {
+        console.log(`session completed!`)
+        endConnectionToSQL();
+        return;
+     }
 }
 
-    // If they wanted to view info, determine what info they wanted to view
+    // If they wanted to view info, determine what info they wanted to view and invoke the appropriate function to get and display the data...
     function directUserFromViewInfo() {
         if (nextStep == "Departments") {
             viewDepartments();
@@ -279,8 +295,18 @@ function directUserFromMain () {
 
         // If they want to view departments...
         function viewDepartments(){
-            console.log(`viewDepartmenet function invoked`);
+            // Select all data from the departmenets table
+            connection.query(`SELECT * FROM department_table`, (err, res) => {
+                // If error log error
+                if (err) throw err;
+                // Display the data in a table format...
+                console.table(res);
+                // Run task completed function
+                taskCompleted();
+                // And start the main prompt function again
+                startMainPrompt();
 
+            })
         }
 
         // If they want to view roles...
@@ -298,7 +324,7 @@ function directUserFromMain () {
             console.log(`viewAll function invoked`);
         }            
 
-        // When completed, ask them to make their next selection
+        
 
     // If they chose to add department, roles, or employees...
 
