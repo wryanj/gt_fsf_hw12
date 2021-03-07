@@ -305,18 +305,38 @@ function directUserFromMain () {
                 taskCompleted();
                 // And start the main prompt function again
                 startMainPrompt();
-
             })
         }
 
         // If they want to view roles...
         function viewRoles(){
-            console.log(`viewRoles function invoked`);
+            // Select all data from the departmenets table
+            connection.query(`SELECT * FROM role_table`, (err, res) => {
+                // If error log error
+                if (err) throw err;
+                // Display the data in a table format...
+                console.table(res);
+                // Run task completed function
+                taskCompleted();
+                // And start the main prompt function again
+                startMainPrompt();
+            })
         }
 
         // If they want to view employees...
         function viewEmployees(){
             console.log(`viewEmployees function invoked`);
+             // Select all data from the departmenets table
+             connection.query(`SELECT * FROM employee_table`, (err, res) => {
+                // If error log error
+                if (err) throw err;
+                // Display the data in a table format...
+                console.table(res);
+                // Run task completed function
+                taskCompleted();
+                // And start the main prompt function again
+                startMainPrompt();
+            })
         }
 
         // If they want to view everything together in one table...
