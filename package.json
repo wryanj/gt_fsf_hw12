@@ -1,0 +1,24 @@
+{
+  "name": "gt_fsf_hw12_employee_data_tracker",
+  "version": "1.0.0",
+  "description": "This assignment asks us to setup an MySQL DB and utilize that along with nodejs and other related libraries to create an application for managing a companies employee data.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wryanj/gt_fsf_hw12.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wryanj/gt_fsf_hw12/issues"
+  },
+  "homepage": "https://github.com/wryanj/gt_fsf_hw12#readme",
+  "dependencies": {
+    "inquirer": "^8.0.0",
+    "mysql": "^2.18.1"
+  }
+}
