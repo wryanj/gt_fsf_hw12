@@ -80,7 +80,25 @@
         ])
     }
 
-    // Declare prompts to add informatoin to various tables...
+    // Declare prompts to allow for selection what information they specifically want to view...
+    function viewInfo() {
+        return inquirer.prompt ([
+            {
+                type: "list",
+                name: "itemToView",
+                message: "What would you like to view",
+                choices: [
+                    "Departments", 
+                    "Roles",
+                    "Employees",
+                    "All Information"
+                ]
+            }
+        ])
+
+    }
+
+    // Declare prompts to allow them to select what information they specifically want to add...
     function addInfo () {
         return inquirer.prompt ([
             {
