@@ -7,6 +7,7 @@
     const inquirer = require('inquirer');
 
     // DEFINE GLOBAL VARIABLES
+    let nextStep;
     let availibleRoles = ["default1", "default2"]; // Used to provide inquirerer with of availible roles to choose from based on roles in DB
     let availibleManagers = ["default1", "default2"]; // Used to provide inquirerer with of availible managers to choose from based on roles in DB
 
@@ -50,13 +51,15 @@
 
     // Declare init function to be invoked at start of program sequence...
     function init (){
-        console.log(`Welcome to the employee tracker! Select what you woud like to do first. When you finish, you may select to end your session.`);
-        promptUserMain();
+        // Reset the next step variable that will be fluid during the prompt sequences...
+        nextStep="";
+        // Welcome the User
+        console.log(`Welcome to the employee tracker! Choose from below to get started. When your finished, select "fininsh session" `);
     }
 
     // Declare choose again function to be invoked every time a user finishes a given operation
     function chooseNext(){
-        console.log(`You have complted this task. Please choose what you would like to do next, or select end session if you would like to finish`);
+        console.log(`You have complted this task`);
         promptUserMain();
     }
 
@@ -65,23 +68,25 @@
 //-------------------------------------------------------------------------------------------------------------
 
     // Declare main promptUser function for letting people choose what they would like to do...
-    function promtUserMain () {
+    function promptUserMain () {
         return inquirer.prompt ([
             {
                 type: "list",
-                name: "mainSelections",
-                message: "Options:",
+                name: "mainSelection",
+                message: "Select an Option",
                 choices: [
                     "View departments, roles, or employees", 
                     "Add new departments, roles, or employees",
-                    "Update roles for an employee"
+                    "Update roles for an employee",
+                    "Finish session"
                 ]
             }
         ])
+        
     }
 
     // Declare prompts to allow for selection what information they specifically want to view...
-    function viewInfo() {
+    function promptUserViewInfo() {
         return inquirer.prompt ([
             {
                 type: "list",
@@ -99,7 +104,7 @@
     }
 
     // Declare prompts to allow them to select what information they specifically want to add...
-    function addInfo () {
+    function promptUserAddInfo () {
         return inquirer.prompt ([
             {
                 type: "list",
@@ -115,7 +120,7 @@
     }
 
         // Declare prompt if user chooses to add A new department...
-        function addDepartment () {
+        function promptUserAddDepartment () {
             return inquirer.prompt ([
                 {
                     type: "input",
@@ -132,7 +137,7 @@
         }
 
         // Declare prompt if a user chooses to add A new role...
-        function addRole () {
+        function promptUserAddRole () {
             return inquirer.prompt ([
                 {
                     type: "list",
@@ -173,7 +178,7 @@
         }
 
         // Declare prompt if a user chooses to add A new employee...
-        function addEmployee () {
+        function promptUserAddEmployee () {
             return inquirer.prompt ([
                 {
                     type: "input",
@@ -212,23 +217,86 @@
 // DEFINE PROGRAM SEQUENCE
 //-------------------------------------------------------------------------------------------------------------
 
-// Upon start (entry of node index.js in CLI)....
+// Upon start (entry of node index.js in CLI)... welcome them with a message....
+init();
 
-// Prompt the user what they would like to do...
+// Prompt the user what they want to do (get their main selection)...
+promptUserMain()
 
-// Depending on their selection, invoke the appropriate next steps...
+    // Then capture the response in a nextStep global variable and invoke the next function to route them to the right prompt..
+    .then(response => {
+        nextStep = response.mainSelection;
+        console.log(`nextStep is set to = ${nextStep}`);
+        directUserFromMain();
+    })
 
-    // If they chose to view departments, roles, or employees
+    // If there is an error, log the error
+    .catch(err => {if (err) throw err});
 
-        // Prompt which info they would like to view...
 
-            // If they want to view departments...
+// Depending on their main selection, direct them to the appropriate next steps
+function directUserFromMain () {
+    
+    // If they chose to view departments, roles, or employees, 
+    if (nextStep == "View departments, roles, or employees") {
 
-            // If they want to view roles...
+        // Prompt them which info they would like to view
+        promptUserViewInfo()
 
-            // If they want to view employees...
+            // Then capture the response and invoke the direct user from view info function
+            .then (response => {
+                nextStep = response.itemToView;
+                console.log(`nextStep is set to = ${nextStep}`);
+                directUserFromViewInfo();
+            })
 
-            // If they want to view everything together in one table...            
+            // If there is an error, log the error
+            .catch(err => {if (err) throw err});
+    }
+    if (nextStep == "Add new departments, roles, or employees") {
+        promptUserAddInfo();
+    }
+    if (nextStep == "Update roles for an employee") {
+        promptUserUpdateInfo();
+    }
+}
+
+    // If they wanted to view info, determine what info they wanted to view
+    function directUserFromViewInfo() {
+        if (nextStep == "Departments") {
+            viewDepartments();
+        }
+        if (nextStep == "Roles") {
+            viewRoles();
+        }
+        if (nextStep == "Employees") {
+            viewEmployees();
+        }
+        if (nextStep == "All Information") {
+            viewAll();
+        }     
+    }
+
+        // If they want to view departments...
+        function viewDepartments(){
+            console.log(`viewDepartmenet function invoked`);
+
+        }
+
+        // If they want to view roles...
+        function viewRoles(){
+            console.log(`viewRoles function invoked`);
+        }
+
+        // If they want to view employees...
+        function viewEmployees(){
+            console.log(`viewEmployees function invoked`);
+        }
+
+        // If they want to view everything together in one table...
+        function viewAll(){
+            console.log(`viewAll function invoked`);
+        }            
 
         // When completed, ask them to make their next selection
 
