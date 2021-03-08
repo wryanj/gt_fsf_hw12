@@ -7,27 +7,9 @@
         const inquirer = require('inquirer');
 
     // DEFINE GLOBAL VARIABLES
-        // This will be set through the program to direct users to the next appropriate functoins based on inputs in inquirer 
-        let nextStep; 
-        // This will be populated from the database when required to facilitate certain role creations
-        let currentDepartments = [
-            {
-                id:29,
-                department_name: "department name example",
-            },
-            {
-                id:30,
-                department_name: "department name2 example",
-            }
-        ]; 
-        // This will be set to populate certain inquirer choices in the role creation prompt
-        let currentDepartmentNames = currentDepartments.map(a=>a.department_name);
-            console.log(currentDepartmentNames);
-            console.log(typeof currentDepartmentNames);
-        
-        let testArr = ["choice1", "choice2"];
-       
-
+        let nextStep; // This will be set through the program to direct users to the next appropriate functoins based on inputs in inquirer 
+        let currentDepartments = []; // This is set in the init function to hold the latest view of Department names & ids to be used in the add role function later
+        let currentDepartmentNames; // This is set in the init function to specifically hold the list of names to be used in the add role prompt
 
 //-------------------------------------------------------------------------------------------------------------
 // CREATE MYSQL DATABASE CONNECTION OBJECT AND RELATED CONNECTION START AND END FUNCTIONS
@@ -63,17 +45,35 @@
     }
 
 //-------------------------------------------------------------------------------------------------------------
-// DECLARE HELPER FUNCTIONS FOR RECURRING MESSAGING OR TASKS
+// DECLARE INIT FUNCTION AND HELPER FUNCTIONS FOR RECURRING MESSAGING OR TASKS
 //-------------------------------------------------------------------------------------------------------------
 
-    // Declare init function to be invoked at start of program sequence...
-    function init (){
+    // If they want to view departments...
+    function init(){
         // Reset the next step variable that will be fluid during the prompt sequences...
-        nextStep="";
+         nextStep="";
+        // Select all data from the departmenets table and populate it as the list of availible data...
+        connection.query(`SELECT * FROM department_table`, (err, res) => {
+            // If error log error
+            if (err) throw err;
+            // Log the results
+            console.log(res);
+            // Set the results equal to the array for currentDepartments so that the id and dept names are accessible in add role function later
+            currentDepartments = res;
+            // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
+            currentDepartmentNames = currentDepartments.map(a=>a.department_name);
+            // Start the program
+            startProgram();
+        })
+    }
+
+    // Declare init function to be invoked at start of program sequence...
+    function startProgram (){
         // Welcome the User
         console.log(`Welcome to the employee tracker! Choose from below to get started. When your finished, select "fininsh session" `);
-        // Invoke the start main prompt function
-        startMainPrompt();
+       // Start the prompt
+       startMainPrompt();
+       
     }
 
     // Declare choose again function to be invoked every time a user finishes a given operation
@@ -246,7 +246,7 @@
 // DEFINE PROGRAM SEQUENCE
 //-------------------------------------------------------------------------------------------------------------
 
-// Upon start, present a message and invoke the startMainPrompt function
+// Initialize the program (which loads required data, then calls the start program function)
 init();
 
 // Start the main prompt sequence
@@ -422,6 +422,7 @@ function directUserFromMain () {
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
+
             // Insert the new departmenet into the departmenet table
             function insertNewDepartment() {
                 connection.query (
@@ -452,7 +453,7 @@ function directUserFromMain () {
             let newRoleSalary;
             let newRoleDepartment;
             let newRoleDepartmentObject;
-            let newRoleDepartmentID    
+            let newRoleDepartmentID;
             // Prompt them to answer some additional questions about what role they want to add..
             addRolePrompt()
                 // Then use the response to prepare variables for use in inserting new content to the DB...
@@ -470,6 +471,7 @@ function directUserFromMain () {
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
+
             // Insert the new role into the role_table
             function insertNewRole() {
                 connection.query (
@@ -495,11 +497,6 @@ function directUserFromMain () {
             }
         }
 
-                // Prompt them to add a new role
-
-                // Then take that response and insert it into the department table in the DB
-
-                // When completed, ask them to make their next selection
 
         // If they want to add an employee...
 
