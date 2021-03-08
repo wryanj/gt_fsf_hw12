@@ -457,8 +457,8 @@ function directUserFromMain () {
                 .then(response => {
                     newRoleTitle = response.newRoleTitle;
                     newRoleSalary = response.newRoleSalary;
-                    newRoleDepartment = response.newDepartment;
-                    console.log(`New role you want to add is set to = ${newRoleTitle} with salaray of ${newRoleSalary} working in the ${newRoleDepartment}`);
+                    newRoleDepartment = response.newRoleDepartment;
+                    console.log(`New role you want to add is set to = ${newRoleTitle} with salaray of ${newRoleSalary} working in the ${newRoleDepartment} department`);
                     insertNewRole();
                 })
                 // If there is an error, log the error
@@ -466,10 +466,11 @@ function directUserFromMain () {
             // Insert the new role into the role_table
             function insertNewRole() {
                 // Get the id of the departmenet selected during the role setup process
-                let departmentIDforNewRole = CurrentDepartments.find(obj=>obj.department_name===newRoleDepartment);
-                    console.log("id of selected department is equal to" + departmentIDforNewRole);
+                let newRoleDepartmentObject = currentDepartments.find(obj=>obj.department_name===newRoleDepartment);
+                let newRoleDepartmentID = newRoleDepartmentObject.id;
+                    console.log("id of selected department is equal to " + (newRoleDepartmentID));
                 // Insert the new role into the role_table can call next steps...
-                connection.query (
+                /*connection.query (
                     // Insert the new departmenet
                     `INSERT INTO role_table (
                         employee_role_title,
@@ -488,7 +489,7 @@ function directUserFromMain () {
                         // Then call the view Roles function to display the table and re pull up choices
                         viewRoles();
                     }
-                )
+                )*/
             }
         }
 
