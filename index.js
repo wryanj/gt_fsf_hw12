@@ -56,8 +56,6 @@
         connection.query(`SELECT * FROM department_table`, (err, res) => {
             // If error log error
             if (err) throw err;
-            // Log the results
-            console.log(res);
             // Set the results equal to the array for currentDepartments so that the id and dept names are accessible in add role function later
             currentDepartments = res;
             // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
@@ -80,10 +78,20 @@
     function taskCompleted(){
         // Reset the next step variable...
         nextStep="";
-        // Provide a note the task is completed..
-        console.log(`You have complted this task. You may now select what to do next`);
-        
+        // Select all data from the departmenets table and populate it as the list of availible data...
+        connection.query(`SELECT * FROM department_table`, (err, res) => {
+            // If error log error
+            if (err) throw err;
+            // Set the results equal to the array for currentDepartments so that the id and dept names are accessible in add role function later
+            currentDepartments = res;
+            // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
+            currentDepartmentNames = currentDepartments.map(a=>a.department_name);
+            // Provide a note the task is completed..
+            console.log(`You have complted this task. You may now select what to do next`);
+            startMainPrompt();
+        })
     }
+        
 
 //-------------------------------------------------------------------------------------------------------------
 // DECLARE INQUIRER PROMPT FUNCTIONS
@@ -330,8 +338,6 @@ function directUserFromMain () {
                 console.table(res);
                 // Run task completed function
                 taskCompleted();
-                // And start the main prompt function again
-                startMainPrompt();
             })
         }
 
@@ -345,8 +351,6 @@ function directUserFromMain () {
                 console.table(res);
                 // Run task completed function
                 taskCompleted();
-                // And start the main prompt function again
-                startMainPrompt();
             })
         }
 
@@ -360,8 +364,6 @@ function directUserFromMain () {
                 console.table(res);
                 // Run task completed function
                 taskCompleted();
-                // And start the main prompt function again
-                startMainPrompt();
             })
         }
 
@@ -387,8 +389,6 @@ function directUserFromMain () {
                 console.table(res);
                 // Run task completed function
                 taskCompleted();
-                // And start the main prompt function again
-                startMainPrompt();
             })
         }            
 
@@ -454,8 +454,10 @@ function directUserFromMain () {
             let newRoleDepartment;
             let newRoleDepartmentObject;
             let newRoleDepartmentID;
+
             // Prompt them to answer some additional questions about what role they want to add..
             addRolePrompt()
+
                 // Then use the response to prepare variables for use in inserting new content to the DB...
                 .then(response => {
                     // Prepare the appropriate inputs as variables...
@@ -487,7 +489,6 @@ function directUserFromMain () {
                     (err, res) => {
                         // If error log error
                         if (err) throw err;
-                        console.log(res);
                         // Otherwise Log success and display the added department
                         console.log(`You have successfully added ${newRoleTitle} to the roles database!`);
                         // Then call the view Roles function to display the table and re pull up choices
