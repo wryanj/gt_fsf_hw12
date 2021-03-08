@@ -3,13 +3,30 @@
 //-------------------------------------------------------------------------------------------------------------
 
     // Import required 3rd Party Node Libraries
-    const mysql = require('mysql');
-    const inquirer = require('inquirer');
+        const mysql = require('mysql');
+        const inquirer = require('inquirer');
 
     // DEFINE GLOBAL VARIABLES
-    let nextStep;
-    let availibleRoles = ["default1", "default2"]; // Used to provide inquirerer with of availible roles to choose from based on roles in DB
-    let availibleManagers = ["default1", "default2"]; // Used to provide inquirerer with of availible managers to choose from based on roles in DB
+        // This will be set through the program to direct users to the next appropriate functoins based on inputs in inquirer 
+        let nextStep; 
+        // This will be populated from the database when required to facilitate certain role creations
+        let currentDepartments = [
+            {
+                id:29,
+                department_name: "department name example",
+            },
+            {
+                id:30,
+                department_name: "department name2 example",
+            }
+        ]; 
+        // This will be set to populate certain inquirer choices in the role creation prompt
+        let currentDepartmentNames = currentDepartments.map(a=>a.department_name);
+            console.log(currentDepartmentNames);
+            console.log(typeof currentDepartmentNames);
+        
+        let testArr = ["choice1", "choice2"];
+       
 
 
 //-------------------------------------------------------------------------------------------------------------
@@ -146,7 +163,7 @@
             return inquirer.prompt ([
                 {
                     type: "list",
-                    name: "roleTitle",
+                    name: "newRoleTitle",
                     message: "What would you like to add?",
                     choices: [
                         "Owner", 
@@ -165,7 +182,7 @@
                 },
                 {
                     type: "list",
-                    name: "SalaryRange",
+                    name: "newRoleSalary",
                     message: "Please select a salary range for this role",
                     choices: [
                         100.000,
@@ -178,7 +195,14 @@
                         800.000,
                         900.000
                     ]
+                },
+                {
+                    type: "list",
+                    name: "newRoleDepartment",
+                    message: "What departmenet will this role reside within? (If the department does not exist yet, please select this and create a new department first)",
+                    choices: currentDepartmentNames
                 }
+               
             ])
         }
 
@@ -244,49 +268,38 @@ function startMainPrompt () {
 
 // Depending on their main selection, direct them to the appropriate next steps
 function directUserFromMain () {
-    
-    // If they chose to view departments, roles, or employees, 
     if (nextStep == "View departments, roles, or employees") {
-
         // Prompt them which info they would like to view
         viewInfoPrompt()
-
             // Then capture the response and invoke the direct user from view info function
             .then (response => {
                 nextStep = response.itemToView;
                 console.log(`nextStep is set to = ${nextStep}`);
                 directUserFromViewInfo();
             })
-
             // If there is an error, log the error
             .catch(err => {if (err) throw err});
     }
-
-    // If they chose to add departmenets, roles, or employees...
     if (nextStep == "Add new departments, roles, or employees") {
-
         // Prompt them for what specific information they would like to add...
         addInfoPrompt()
-
             // Then capture the response and invoke the direct user from add info function...
             .then (response => {
                 nextStep = response.itemToAdd;
                 console.log(`nextStep is set to = ${nextStep}`);
                 directUserFromAddInfo();
             })
+            // If there is an error, log the error
+            .catch(err => {if (err) throw err});
     }
-
-    // If they would like to update roles for an employee...
     if (nextStep == "Update roles for an employee") {
        // updateInfoPrompt(); - Have to add these into inquiere. 
     }
-
-    // If they would like to complete their session...
     if (nextStep == "Finish session") {
         console.log(`session completed!`)
         endConnectionToSQL();
         return;
-     }
+    }
 }
 
     // VIEWING INFO----------------------------------------------------------------------------------------------------------------------
@@ -387,16 +400,12 @@ function directUserFromMain () {
         if (nextStep == "A new department") {
             addDepartmenet();
         }
-        if (nextStep == "Roles") {
-            
-            // insert function to call
+        if (nextStep == "A new role") {
+            addRole();
         }
-        if (nextStep == "Employees") {
+        if (nextStep == "A new employee") {
             // insert function to call
-        }
-        if (nextStep == "All Information") {
-            // insert function to call
-        }     
+        }  
     }
 
         // If they want to add a new department..
@@ -411,6 +420,8 @@ function directUserFromMain () {
                     console.log(`New departmenet you want to add is set to = ${newDepartment}`);
                     insertNewDepartment();
                 })
+                // If there is an error, log the error
+                .catch(err => {if (err) throw err});
             // Insert the new departmenet into the departmenet table
             function insertNewDepartment() {
                 connection.query (
@@ -431,11 +442,55 @@ function directUserFromMain () {
                         viewDepartments();
                     }
                 )
-            }
-            
+            } 
         }
 
         // If they want to add a role....
+        function addRole() {
+            // Declare some local variables to utilize when inserting this into the DB
+            let newRoleTitle;
+            let newRoleSalary;
+            let newRoleDepartment;    
+            // Prompt them to answer some additional questions about what role they want to add..
+            addRolePrompt()
+                // Then capture their input into variables and invoke the next set of steps...
+                .then(response => {
+                    newRoleTitle = response.newRoleTitle;
+                    newRoleSalary = response.newRoleSalary;
+                    newRoleDepartment = response.newDepartment;
+                    console.log(`New role you want to add is set to = ${newRoleTitle} with salaray of ${newRoleSalary} working in the ${newRoleDepartment}`);
+                    insertNewRole();
+                })
+                // If there is an error, log the error
+                .catch(err => {if (err) throw err});
+            // Insert the new role into the role_table
+            function insertNewRole() {
+                // Get the id of the departmenet selected during the role setup process
+                let departmentIDforNewRole = CurrentDepartments.find(obj=>obj.department_name===newRoleDepartment);
+                    console.log("id of selected department is equal to" + departmentIDforNewRole);
+                // Insert the new role into the role_table can call next steps...
+                connection.query (
+                    // Insert the new departmenet
+                    `INSERT INTO role_table (
+                        employee_role_title,
+                        employee_salary,
+                        department_id
+                    ) VALUES
+                        ("${newRoleTitle}", ${newRoleSalary}, ${departmentIDforNewRole});`
+                    ,
+                    // Log the result
+                    (err, res) => {
+                        // If error log error
+                        if (err) throw err;
+                        console.log(res);
+                        // Otherwise Log success and display the added department
+                        console.log(`You have successfully added ${newDepartment}`);
+                        // Then call the view Roles function to display the table and re pull up choices
+                        viewRoles();
+                    }
+                )
+            }
+        }
 
                 // Prompt them to add a new role
 
