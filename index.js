@@ -242,9 +242,6 @@ function startMainPrompt () {
     .catch(err => {if (err) throw err});
 }
 
-    
-
-
 // Depending on their main selection, direct them to the appropriate next steps
 function directUserFromMain () {
     
@@ -325,7 +322,6 @@ function directUserFromMain () {
 
         // If they want to view employees...
         function viewEmployees(){
-            console.log(`viewEmployees function invoked`);
              // Select all data from the departmenets table
              connection.query(`SELECT * FROM employee_table`, (err, res) => {
                 // If error log error
@@ -339,9 +335,31 @@ function directUserFromMain () {
             })
         }
 
-        // If they want to view everything together in one table...
+        // If they want to view everything together in one table (except raw ids)
         function viewAll(){
             console.log(`viewAll function invoked`);
+               // Select all data from the departmenets table
+               connection.query(
+                `SELECT 
+                    employee_table.employee_firstname, 
+                    employee_table.employee_lastname, 
+                    role_table.employee_role_title, 
+                    role_table.employee_salary,
+                    department_table.department_name
+                FROM ((employee_table 
+                INNER JOIN role_table ON role_table.id=employee_table.role_id)
+                INNER JOIN department_table ON role_table.department_id=department_table.id);`
+                , 
+                (err, res) => {
+                // If error log error
+                if (err) throw err;
+                // Display the data in a table format...
+                console.table(res);
+                // Run task completed function
+                taskCompleted();
+                // And start the main prompt function again
+                startMainPrompt();
+            })
         }            
 
         
