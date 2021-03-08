@@ -113,7 +113,7 @@
         return inquirer.prompt ([
             {
                 type: "list",
-                name: "itemAdded",
+                name: "itemToAdd",
                 message: "What would you like to add?",
                 choices: [
                     "A new department", 
@@ -129,7 +129,7 @@
             return inquirer.prompt ([
                 {
                     type: "input",
-                    name: "mainSelections",
+                    name: "departmentToAdd",
                     message: "Please enter the name of the department you would like to add",
                     validate: async(input) => {
                         if(input==="") {
@@ -261,18 +261,35 @@ function directUserFromMain () {
             // If there is an error, log the error
             .catch(err => {if (err) throw err});
     }
+
+    // If they chose to add departmenets, roles, or employees...
     if (nextStep == "Add new departments, roles, or employees") {
-        addInfoPrompt();
+
+        // Prompt them for what specific information they would like to add...
+        addInfoPrompt()
+
+            // Then capture the response and invoke the direct user from add info function...
+            .then (response => {
+                nextStep = response.itemToAdd;
+                console.log(`nextStep is set to = ${nextStep}`);
+                directUserFromAddInfo();
+            })
     }
+
+    // If they would like to update roles for an employee...
     if (nextStep == "Update roles for an employee") {
        // updateInfoPrompt(); - Have to add these into inquiere. 
     }
+
+    // If they would like to complete their session...
     if (nextStep == "Finish session") {
         console.log(`session completed!`)
         endConnectionToSQL();
         return;
      }
 }
+
+    // VIEWING INFO----------------------------------------------------------------------------------------------------------------------
 
     // If they wanted to view info, determine what info they wanted to view and invoke the appropriate function to get and display the data...
     function directUserFromViewInfo() {
@@ -363,18 +380,73 @@ function directUserFromMain () {
         }            
 
         
+    // ADDING INFO--------------------------------------------------------------------------------------------------------------------------
 
-    // If they chose to add department, roles, or employees...
+    // If they chose to add information, determine what info they wanted to add and invoke the approropriate function to get adn display the data...
+    function directUserFromAddInfo() {
 
-        // Prompt the user which they want to add...
+        // If they want to add a new departmenet...
+        if (nextStep == "A new department") {
 
-            // If they want to add a department....
+            // Declare a local variable to be used within this block
+            let newDepartment;
+
+            // Prompt them to answer some additional questions about what departmenet they want to add
+            addDepartmentPrompt()
+
+                // Then capture their input in a variable and invoke the next set of stems
+                .then (response => {
+                    newDepartment = response.departmentToAdd;
+                    console.log(`New departmenet you want to add is set to = ${newDepartment}`);
+                    addDepartmenet();
+                })
+            
+            // Create their new departmenet and update it to the DB
+            function addDepartmenet() {
+
+                // Insert the new departmenet into the departmenet table
+                connection.query (
+                    // Inser the new departmenet
+                    `INSERT INTO department_table (
+                        department_name
+                    ) VALUES
+                        ("${newDepartment}");`
+                    ,
+                    // Log the result
+                    (err, res) => {
+                        // If error log error
+                        if (err) throw err;
+
+                        console.log(res);
+                        // Otherwise Log success and display the added department
+                        console.log(`You have successfully added ${newDepartment}`);
+
+                        // Then call the view Departmenets function to display the table and re pull up choices
+                        viewDepartments();
+                    }
+                )
+            }
+
+
+        }
+        if (nextStep == "Roles") {
+            viewRoles();
+        }
+        if (nextStep == "Employees") {
+            viewEmployees();
+        }
+        if (nextStep == "All Information") {
+            viewAll();
+        }     
+    }
+
+        // If they want to add a department....
 
                 // Prompt them to add a new department
 
                 // Then take that response and insert it into the department table in the DB
 
-            // If they want to add a role....
+        // If they want to add a role....
 
                 // Prompt them to add a new role
 
@@ -382,7 +454,7 @@ function directUserFromMain () {
 
                 // When completed, ask them to make their next selection
 
-            // If they want to add an employee...
+        // If they want to add an employee...
 
                 // Prompt them enter employee names and other required information..
 
@@ -391,6 +463,10 @@ function directUserFromMain () {
                 // Insert the appropriate data to the DB...
         
                 // When completed, ask them to make their next selection
+
+
+
+
 
     // If they chose to update employee role...
 
