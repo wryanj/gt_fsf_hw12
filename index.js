@@ -384,29 +384,37 @@ function directUserFromMain () {
 
     // If they chose to add information, determine what info they wanted to add and invoke the approropriate function to get adn display the data...
     function directUserFromAddInfo() {
-
-        // If they want to add a new departmenet...
         if (nextStep == "A new department") {
+            addDepartmenet();
+        }
+        if (nextStep == "Roles") {
+            
+            // insert function to call
+        }
+        if (nextStep == "Employees") {
+            // insert function to call
+        }
+        if (nextStep == "All Information") {
+            // insert function to call
+        }     
+    }
 
+        // If they want to add a new department..
+        function addDepartmenet() {
             // Declare a local variable to be used within this block
             let newDepartment;
-
             // Prompt them to answer some additional questions about what departmenet they want to add
             addDepartmentPrompt()
-
                 // Then capture their input in a variable and invoke the next set of stems
                 .then (response => {
                     newDepartment = response.departmentToAdd;
                     console.log(`New departmenet you want to add is set to = ${newDepartment}`);
-                    addDepartmenet();
+                    insertNewDepartment();
                 })
-            
-            // Create their new departmenet and update it to the DB
-            function addDepartmenet() {
-
-                // Insert the new departmenet into the departmenet table
+            // Insert the new departmenet into the departmenet table
+            function insertNewDepartment() {
                 connection.query (
-                    // Inser the new departmenet
+                    // Insert the new departmenet
                     `INSERT INTO department_table (
                         department_name
                     ) VALUES
@@ -416,35 +424,16 @@ function directUserFromMain () {
                     (err, res) => {
                         // If error log error
                         if (err) throw err;
-
                         console.log(res);
                         // Otherwise Log success and display the added department
                         console.log(`You have successfully added ${newDepartment}`);
-
                         // Then call the view Departmenets function to display the table and re pull up choices
                         viewDepartments();
                     }
                 )
             }
-
-
+            
         }
-        if (nextStep == "Roles") {
-            viewRoles();
-        }
-        if (nextStep == "Employees") {
-            viewEmployees();
-        }
-        if (nextStep == "All Information") {
-            viewAll();
-        }     
-    }
-
-        // If they want to add a department....
-
-                // Prompt them to add a new department
-
-                // Then take that response and insert it into the department table in the DB
 
         // If they want to add a role....
 
