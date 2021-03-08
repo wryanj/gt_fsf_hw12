@@ -450,34 +450,36 @@ function directUserFromMain () {
             // Declare some local variables to utilize when inserting this into the DB
             let newRoleTitle;
             let newRoleSalary;
-            let newRoleDepartment;    
+            let newRoleDepartment;
+            let newRoleDepartmentObject;
+            let newRoleDepartmentID    
             // Prompt them to answer some additional questions about what role they want to add..
             addRolePrompt()
-                // Then capture their input into variables and invoke the next set of steps...
+                // Then use the response to prepare variables for use in inserting new content to the DB...
                 .then(response => {
+                    // Prepare the appropriate inputs as variables...
                     newRoleTitle = response.newRoleTitle;
                     newRoleSalary = response.newRoleSalary;
                     newRoleDepartment = response.newRoleDepartment;
-                    console.log(`New role you want to add is set to = ${newRoleTitle} with salaray of ${newRoleSalary} working in the ${newRoleDepartment} department`);
+                    newRoleDepartmentObject = currentDepartments.find(obj=>obj.department_name===newRoleDepartment);
+                    newRoleDepartmentID = newRoleDepartmentObject.id;
+                    // Log the prepared values to the user
+                    console.log(`New role you want to add is set to = ${newRoleTitle} with salaray of ${newRoleSalary} working in the ${newRoleDepartment} department with department id ${newRoleDepartmentID}`);
+                    // And call the function to insert the new role into the role_table...
                     insertNewRole();
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
             // Insert the new role into the role_table
             function insertNewRole() {
-                // Get the id of the departmenet selected during the role setup process
-                let newRoleDepartmentObject = currentDepartments.find(obj=>obj.department_name===newRoleDepartment);
-                let newRoleDepartmentID = newRoleDepartmentObject.id;
-                    console.log("id of selected department is equal to " + (newRoleDepartmentID));
-                // Insert the new role into the role_table can call next steps...
-                /*connection.query (
+                connection.query (
                     // Insert the new departmenet
                     `INSERT INTO role_table (
                         employee_role_title,
                         employee_salary,
                         department_id
                     ) VALUES
-                        ("${newRoleTitle}", ${newRoleSalary}, ${departmentIDforNewRole});`
+                        ("${newRoleTitle}", ${newRoleSalary}, ${newRoleDepartmentID});`
                     ,
                     // Log the result
                     (err, res) => {
@@ -485,11 +487,11 @@ function directUserFromMain () {
                         if (err) throw err;
                         console.log(res);
                         // Otherwise Log success and display the added department
-                        console.log(`You have successfully added ${newDepartment}`);
+                        console.log(`You have successfully added ${newRoleTitle} to the roles database!`);
                         // Then call the view Roles function to display the table and re pull up choices
                         viewRoles();
                     }
-                )*/
+                )
             }
         }
 
