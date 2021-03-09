@@ -10,6 +10,8 @@
         let nextStep; // This will be set through the program to direct users to the next appropriate functoins based on inputs in inquirer 
         let currentDepartments = []; // This is set in the init function to hold the latest view of Department names & ids to be used in the add role function later
         let currentDepartmentNames; // This is set in the init function to specifically hold the list of names to be used in the add role prompt
+        let currentRoles = []; // This is set in the init function to hold the latest view of Department names & ids to be used in the add role function later
+        let currentRoleNames; // This is set in the initi function (and task completed function) to hold the latest list of role names for use in creating a new employee
 
 //-------------------------------------------------------------------------------------------------------------
 // CREATE MYSQL DATABASE CONNECTION OBJECT AND RELATED CONNECTION START AND END FUNCTIONS
@@ -48,10 +50,8 @@
 // DECLARE INIT FUNCTION AND HELPER FUNCTIONS FOR RECURRING MESSAGING OR TASKS
 //-------------------------------------------------------------------------------------------------------------
 
-    // If they want to view departments...
+    // Init Function-- HAS TO WAIT ON GET LATEST DATA BEFORE IT STARTS PROGRAM!
     function init(){
-        // Reset the next step variable that will be fluid during the prompt sequences...
-         nextStep="";
         // Select all data from the departmenets table and populate it as the list of availible data...
         connection.query(`SELECT * FROM department_table`, (err, res) => {
             // If error log error
@@ -60,24 +60,30 @@
             currentDepartments = res;
             // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
             currentDepartmentNames = currentDepartments.map(a=>a.department_name);
-            // Start the program
-            startProgram();
+            console.log(`Lates department data retrieved`)
+            getNextData()
         })
-    }
-
-    // Declare init function to be invoked at start of program sequence...
-    function startProgram (){
-        // Welcome the User
-        console.log(`Welcome to the employee tracker! Choose from below to get started. When your finished, select "fininsh session" `);
-       // Start the prompt
-       startMainPrompt();
+        // Select all data from the departmenets table and populate it as the list of availible data...
+        function getNextData () {
+            connection.query(`SELECT * FROM role_table`, (err, res) => {
+                // If error log error
+                if (err) throw err;
+                // Set the results equal to the array for currentDepartments so that the id and dept names are accessible in add role function later
+                currentRoles = res;
+                // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
+                currentRoleNames = currentRoles.map(a=>a.employee_role_title);
+                console.log(`current role names are ${currentRoleNames}`);
+                console.log(`latest role data retrieved`);
+                nextStep="";
+                console.log(`Welcome to the employee tracker! Choose from below to get started. When your finished, select "fininsh session" `);
+                startMainPrompt();
+            })
+        }
        
     }
 
     // Declare choose again function to be invoked every time a user finishes a given operation
     function taskCompleted(){
-        // Reset the next step variable...
-        nextStep="";
         // Select all data from the departmenets table and populate it as the list of availible data...
         connection.query(`SELECT * FROM department_table`, (err, res) => {
             // If error log error
@@ -86,10 +92,24 @@
             currentDepartments = res;
             // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
             currentDepartmentNames = currentDepartments.map(a=>a.department_name);
-            // Provide a note the task is completed..
-            console.log(`You have complted this task. You may now select what to do next`);
-            startMainPrompt();
+            console.log(`Lates department data retrieved`)
+            getNextData()
         })
+        // Select all data from the departmenets table and populate it as the list of availible data...
+        function getNextData () {
+            connection.query(`SELECT * FROM role_table`, (err, res) => {
+                // If error log error
+                if (err) throw err;
+                // Set the results equal to the array for currentDepartments so that the id and dept names are accessible in add role function later
+                currentRoles = res;
+                // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
+                currentRoleNames = currentRoles.map(a=>a.employee_role_title);
+                console.log(`current role names are ${currentRoleNames}`);
+                console.log(`latest role data retrieved`);
+                nextStep="";
+                startMainPrompt();
+            })
+        }
     }
         
 
@@ -207,7 +227,7 @@
                 {
                     type: "list",
                     name: "newRoleDepartment",
-                    message: "What departmenet will this role reside within? (If the department does not exist yet, please select this and create a new department first)",
+                    message: "What departmenet will this role reside within? (If the department does not exist yet, please create a new department first)",
                     choices: currentDepartmentNames
                 }
                
@@ -219,7 +239,7 @@
             return inquirer.prompt ([
                 {
                     type: "input",
-                    name: "employeeFirstName",
+                    name: "newEmployeeFirstName",
                     message: "Please enter the employee's first name",
                     validate: async(input) => {
                         if(input==="") {
@@ -230,7 +250,7 @@
                 },
                 {
                     type: "input",
-                    name: "employeeLastName",
+                    name: "newEmployeeLastName",
                     message: "Please enter the employee's first name",
                     validate: async(input) => {
                         if(input==="") {
@@ -240,10 +260,10 @@
                     } 
                 },
                 {
-                    type: "input",
-                    name: "employeeRole",
-                    message: "Please select the employees role",
-                    choices: availibleManagers 
+                    type: "list",
+                    name: "newEmployeeRole",
+                    message: "Please select the employees role (If the role does yet, please create a new role first)",
+                    choices: currentRoleNames
                 },
 
             ])
@@ -259,17 +279,14 @@ init();
 
 // Start the main prompt sequence
 function startMainPrompt () {
-
     // Presnt the main prompt questions...
     mainPrompt()
-
     // Then capture the response in a nextStep global variable and invoke the next function to route them to the right prompt..
     .then(response => {
         nextStep = response.mainSelection;
         console.log(`nextStep is set to = ${nextStep}`);
         directUserFromMain();
     })
-
     // If there is an error, log the error
     .catch(err => {if (err) throw err});
 }
@@ -404,7 +421,7 @@ function directUserFromMain () {
             addRole();
         }
         if (nextStep == "A new employee") {
-            // insert function to call
+            addEmployee();
         }  
     }
 
@@ -498,16 +515,59 @@ function directUserFromMain () {
             }
         }
 
-
         // If they want to add an employee...
+        function addEmployee() {
+            // Declare some local variables to utilize when inserting this into the DB
+            let newEmployeeFirstName;
+            let newEmployeeLastName;
+            let newEmployeeRoleObject;
+            let newEmployeeRoleID;
 
-                // Prompt them enter employee names and other required information..
+            // Prompt them to answer some additional questions about what role they want to add..
+            addEmployeePrompt()
 
-                // Then assign the answers into a set of variables to use in creating new info in the DB...
+                // Then use the response to prepare variables for use in inserting new content to the DB...
+                .then(response => {
+                    // Prepare the appropriate inputs as variables...
+                    newEmployeeFirstName = response.newEmployeeFirstName;
+                    newEmployeeLastName = response.newEmployeeLastName;
+                    newEmployeeRole = response.newEmployeeRole;
+                    newEmployeeRoleObject = currentRoles.find(obj=>obj.employee_role_title===newEmployeeRole);
+                    newEmployeeRoleID = newEmployeeRoleObject.id;
+                   
+                    // And call the function to insert the new role into the role_table...
+                    insertNewEmployee();
+                })
+                // If there is an error, log the error
+                .catch(err => {if (err) throw err});
+  
+            // Insert the appropriate data to the DB...
+            function insertNewEmployee() {
+                connection.query (
+                    // Insert the new departmenet
+                    `INSERT INTO employee_table (
+                        employee_firstname,
+                        employee_lastname,
+                        role_id,
+                        manager_id
+                    ) VALUES
+                        ("${newEmployeeFirstName}", "${newEmployeeLastName}", ${newEmployeeRoleID}, 1);` // Come back to manager id when its more clear how this works from the demo. hardcoding to arty B.
+                    ,
+                    // Log the result
+                    (err, res) => {
+                        // If error log error
+                        if (err) throw err;
+                        // Otherwise give a success message to the user
+                        console.log(`You have added ${newEmployeeFirstName} ${newEmployeeLastName} to the employee database!`);
+                        // Then call the view All function so they can see the added value
+                        viewAll();
+                    }
+                )
+            }
 
-                // Insert the appropriate data to the DB...
-        
-                // When completed, ask them to make their next selection
+        }
+
+               
 
 
 
