@@ -20,8 +20,8 @@ INSERT INTO role_table (
 ) VALUES
     ("Owner", 900.000, 1),
     ("QB", 500.000, 2),
-    ("WR1", 300.000, 2),
-    ("LB1", 200.000, 3);
+    ("WR", 300.000, 2),
+    ("LB", 200.000, 3);
 
 
 -- Seeds for employee Table
