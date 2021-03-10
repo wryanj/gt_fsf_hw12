@@ -2,6 +2,9 @@
 // IMPORT DEPENDENCIES & DEFINE GLOBAL VARIABLES
 //-------------------------------------------------------------------------------------------------------------
 
+    // REQUIRE DOTENV TO PROTECT SERVER CREDENTIALS
+    require('dotenv').config();
+
     // IMPORT REQUIRED THIRD PARTY DEPENDENCIES
         const mysql = require('mysql');
         const inquirer = require('inquirer');
@@ -22,14 +25,14 @@
     // Create Connection Object so it's methods can be used within the program
     const connection = mysql.createConnection ({
         // Specify host
-        host: 'localhost',
+        host: process.env.DB_HOST,
         // Specify port
         port: 3306,
         // Enter username (should be 'root')
-        user: 'root',
+        user: process.env.DB_USER,
         // Your password and database you created in workbench with schema
-        password: 'GoDawgs18$',
-        database: 'employee_tracker_db',
+        password: process.env.DB_PASS,
+        database: process.env.DB_NAME,
     });
 
     // Delcare a function to invoke upon readiness to terminate connectoin to SQL database
