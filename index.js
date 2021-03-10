@@ -3,7 +3,7 @@
 //-------------------------------------------------------------------------------------------------------------
 
     // REQUIRE DOTENV TO PROTECT SERVER CREDENTIALS
-    require('dotenv').config();
+        require('dotenv').config();
 
     // IMPORT REQUIRED THIRD PARTY DEPENDENCIES
         const mysql = require('mysql');
@@ -42,136 +42,74 @@
     }
 
 //-------------------------------------------------------------------------------------------------------------
-// DECLARE FUNCTIONS FOR INIT & TASK COMPLETED SO THTA PROPER DATA EXISTS LOCALLY FOR ALL PROGRAM PROMPTS
+// DECLARE INIT FUNCTION FOR USE IN PREPARING THE DATA NEEDED BY THE PROGRAM SEQUENCE UPON START OR TASK COMPLETION
 //-------------------------------------------------------------------------------------------------------------
-
-// Define functions below that reset certain global variables and collect latest data from DB ahead of providing user with any prompts
 
     // Init To Do this upon first time startup
     function init(){
-
-        clearGlobalVariables(); // Calls function declared immediatly below
-        // Reset values for fluid global variables
+        // Call first function to trigger sequence of function calls leading to start of prompt
+        clearGlobalVariables(); 
+        // Reset values for fluid global variables and call get departments
         function clearGlobalVariables(){
             nextStep="";
             currentEmployees="";
             currentEmployeeNames=[];
             getCurrentDepartments();
         }
-        // Select all data from the departmenets table and populate it as the list of availible data...
+        // Get all of the latest department data..
         function getCurrentDepartments(){
             connection.query(`SELECT * FROM department_table`, (err, res) => {
                 // If error log error
                 if (err) throw err;
-                // Set the results equal to the array for currentDepartments so that the id and dept names are accessible in add role function later
+                // Set the current departments array equal to an array of department objects returned in the response
                 currentDepartments = res;
-                // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
+                // Get the department names from the returned object and set them equal to a variable for use in inquirer choices
                 currentDepartmentNames = currentDepartments.map(a=>a.department_name);
-                console.log(`Lates department data retrieved`)
-                // Move to get next data
+                // Get the latest roles information
                 getCurrentRoles()
             })
         }
-        // Select all data from the departmenets table and populate it as the list of availible data...
+        // Get all of the latest roles data...
         function getCurrentRoles () {
             connection.query(`SELECT * FROM role_table`, (err, res) => {
                 // If error log error
                 if (err) throw err;
-                // Set the results equal to the array for currentDepartments so that the id and dept names are accessible in add role function later
+                // Set the current roles equal to the array of roles objects returned in the response
                 currentRoles = res;
-                // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
+                // Pull out the role names and make them into an array for use in inquirer choices and other subsequent functions
                 currentRoleNames = currentRoles.map(a=>a.employee_role_title);
-                
-                // Move to get next data..
+                // Get the latest employee inforamtion.
                 getCurrentEmployees();
             })
         }
+        // Get all of the latest employee information
         function getCurrentEmployees(){
             connection.query(`SELECT * FROM employee_table`, (err, res) => {
                 // If error log error
                 if (err) throw err;
-                // Set currentEmployees to an array of returned objects with id included
+                // Set the current employes array to the array of employee objects retrieved from the database
                 currentEmployees = res;
-                console.log(JSON.stringify(currentEmployees));
-                // Loop through the response object array to make a list of employee Names into a single array
+                // Combine the first and last name properties into a single full name variable for use in inquirer choices later
                 for (i=0; i<res.length; i++) {
-                    // Create variables for the employee fullname
+                    // Loop through and pull out the firstname and lastname and combine them into a full name variable declaried in this loop
                     let fullName = `${res[i].employee_firstname} ${res[i].employee_lastname}`;
-                    // Push that name into the array for current employees
+                    // Each time add that into an array that will hold the full names for use in inquirer choices...
                     currentEmployeeNames.push(fullName);
                 }
-                console.log(`currentEmployee's array is set to ${currentEmployeeNames}`);
-                // Welcome the user and start the program as this is the last data to be retrieved + Reset next step to empty string
-                console.log(`Welcome to the employee tracker! Choose from below to get started. When your finished, select "fininsh session" `);
+                // And start the main prompt
                 startMainPrompt();
             })
         }
        
     }
 
-    // Task Completed to do this every time the end of a sequence is reached (the user completes a task and is brought back to the main prompt menu)
-    function taskCompleted(){
-
-        clearGlobalVariables(); // Calls function declared immediatly below
-        // Reset values for fluid global variables
-        function clearGlobalVariables(){
-            nextStep="";
-            currentEmployees="";
-            currentEmployeeNames=[];
-            console.log(`upon initialization the current employee names are ${currentEmployeeNames}`);
-            getCurrentDepartments();
-        }
-         // Select all data from the departmenets table and populate it as the list of availible data...
-         function getCurrentDepartments(){
-             connection.query(`SELECT * FROM department_table`, (err, res) => {
-                 // If error log error
-                 if (err) throw err;
-                 // Set the results equal to the array for currentDepartments so that the id and dept names are accessible in add role function later
-                 currentDepartments = res;
-                 // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
-                 currentDepartmentNames = currentDepartments.map(a=>a.department_name);
-                 console.log(`Lates department data retrieved`)
-                 // Move to get next data
-                 getCurrentRoles()
-             })
-         }
-         // Select all data from the departmenets table and populate it as the list of availible data...
-         function getCurrentRoles () {
-             connection.query(`SELECT * FROM role_table`, (err, res) => {
-                 // If error log error
-                 if (err) throw err;
-                 // Set the results equal to the array for currentDepartments so that the id and dept names are accessible in add role function later
-                 currentRoles = res;
-                 // Set teh departmenet names array- this will be set to populate certain inquirer choices in the role creation prompt
-                 currentRoleNames = currentRoles.map(a=>a.employee_role_title);
-                 
-                 // Move to get next data..
-                 getCurrentEmployees();
-             })
-         }
-         function getCurrentEmployees(){
-             connection.query(`SELECT * FROM employee_table`, (err, res) => {
-                 // If error log error
-                 if (err) throw err;
-                 // Set currentEmployees to an array of returned objects with id included
-                 currentEmployees = res;
-                 console.log(JSON.stringify(currentEmployees));
-                 // Loop through the response object array to make a list of employee Names into a single array
-                 for (i=0; i<res.length; i++) {
-                     // Create a variablt that holds the combined first and last name into one name
-                     let fullName = `${res[i].employee_firstname} ${res[i].employee_lastname}`;
-                     // Push that name into the array for current employees
-                     currentEmployeeNames.push(fullName);
-                 }
-                 console.log(`currentEmployee's array is set to ${currentEmployeeNames}`);
-                 // Welcome the user and start the program as this is the last data to be retrieved + Reset next step to empty string
-                 nextStep="";
-                 console.log(`task completed`);
-                 startMainPrompt();
-             })
-         }
+    function taskComplete(){
+        // Tell them the job is completed
+        console.log (`\n You have completed this task!\n`);
+        // Re run the init sequence 
+        init();
     }
-        
+ 
 //-------------------------------------------------------------------------------------------------------------
 // DECLARE INQUIRER PROMPT FUNCTIONS
 //-------------------------------------------------------------------------------------------------------------
@@ -182,25 +120,24 @@
             {
                 type: "list",
                 name: "mainSelection",
-                message: "Select an Option",
+                message: "What would you like to do next?",
                 choices: [
                     "View departments, roles, or employees", 
                     "Add new departments, roles, or employees",
-                    "Update roles for an employee",
+                    "Update the role for an existing employee",
                     "Finish session"
                 ]
             }
         ])
         
     }
-
     // Declare prompts to allow for selection what information they specifically want to view...
     function viewInfoPrompt () {
         return inquirer.prompt ([
             {
                 type: "list",
                 name: "itemToView",
-                message: "What would you like to view",
+                message: "What would you like to view?",
                 choices: [
                     "Departments", 
                     "Roles",
@@ -211,7 +148,6 @@
         ])
 
     }
-
     // Declare prompts to allow them to select what information they specifically want to add...
     function addInfoPrompt () {
         return inquirer.prompt ([
@@ -227,7 +163,6 @@
             }
         ])
     }
-
         // Declare prompt if user chooses to add A new department...
         function addDepartmentPrompt () {
             return inquirer.prompt ([
@@ -244,14 +179,13 @@
                 }
             ])
         }
-
         // Declare prompt if a user chooses to add A new role...
         function addRolePrompt () {
             return inquirer.prompt ([
                 {
                     type: "list",
                     name: "newRoleTitle",
-                    message: "What would you like to add?",
+                    message: "What role would you like to add?",
                     choices: [
                         "Owner", 
                         "Head Coach",
@@ -272,7 +206,7 @@
                 {
                     type: "list",
                     name: "newRoleSalary",
-                    message: "Please select a salary range for this role",
+                    message: "What is the salary range for this role?",
                     choices: [
                         100.000,
                         200.000,
@@ -294,7 +228,6 @@
                
             ])
         }
-
         // Declare prompt if a user chooses to add A new employee...
         function addEmployeePrompt () {
             return inquirer.prompt ([
@@ -329,7 +262,6 @@
 
             ])
         }
-
     // Declare prompts to allow them to select what information they specifically want to update...
     function updateInfoPrompt () {
         return inquirer.prompt ([
@@ -338,19 +270,18 @@
                 name: "itemToUpdate",
                 message: "What would you like to update?",
                 choices: [
-                    "An employee's role"
+                    "The role for an existing employee"
                 ]
             }
         ])
     }
-
         // Delcare prompt if user choose to update an employee's role
         function updateEmployeeRolePrompt () {
             return inquirer.prompt ([
                 {
                     type: "list",
                     name: "EmployeeToUpdate",
-                    message: "For which employee do you wish to update roles for?",
+                    message: "For which employee do you wish to update a role for?",
                     choices: currentEmployeeNames
                      
                 },
@@ -366,67 +297,67 @@
 //-------------------------------------------------------------------------------------------------------------
 // DEFINE PROGRAM SEQUENCE
 //-------------------------------------------------------------------------------------------------------------
+    // Welcome the user For the first time
+    console.log(`\n Welcome to the employee Tracker!\n`)
 
     // Run the init sequence... 
     init();
 
     // Start the main prompt sequence
     function startMainPrompt () {
-    // Presnt the main prompt questions...
-    mainPrompt()
-    // Then capture the response in a nextStep global variable and invoke the next function to route them to the right prompt..
-    .then(response => {
-        nextStep = response.mainSelection;
-        console.log(`nextStep is set to = ${nextStep}`);
-        directUserFromMain();
-    })
-    // If there is an error, log the error
-    .catch(err => {if (err) throw err});
-    }
+        // Present the main prompt questions...
+        mainPrompt()
+            // Then capture the response in a nextStep global variable and invoke the next function to route them to the right prompt..
+            .then(response => {
+                nextStep = response.mainSelection;
+                directUserFromMain();
+            })
+            // If there is an error, log the error
+            .catch(err => {if (err) throw err});
+        }
 
     // Depending on their main selection, direct them to the appropriate next steps. Will direct down one of three main paths (viewing, adding, updating) unless finish is selected
     function directUserFromMain () {
-    if (nextStep == "View departments, roles, or employees") {
-        // Prompt them which info they would like to view
-        viewInfoPrompt()
-            // Then capture the response and invoke the direct user from view info function
-            .then (response => {
-                nextStep = response.itemToView;
-                console.log(`nextStep is set to = ${nextStep}`);
-                directUserFromViewInfo();
-            })
-            // If there is an error, log the error
-            .catch(err => {if (err) throw err});
-    }
-    if (nextStep == "Add new departments, roles, or employees") {
-        // Prompt them for what specific information they would like to add...
-        addInfoPrompt()
-            // Then capture the response and invoke the direct user from add info function...
-            .then (response => {
-                nextStep = response.itemToAdd;
-                console.log(`nextStep is set to = ${nextStep}`);
-                directUserFromAddInfo();
-            })
-            // If there is an error, log the error
-            .catch(err => {if (err) throw err});
-    }
-    if (nextStep == "Update roles for an employee") {
-       // Prompt them for what specific information they would like to update on role, and for whom they would like to update for
-       updateInfoPrompt()
-            // Then capture the response and invoke the direct user from updtate info functoin
-            .then(response => {
-                nextStep = response.itemToUpdate
-                console.log(`nextStep is set to = ${nextStep}`);
-                directUserFromUpdateInfo();
-            })
-            // If there is an error, log the error
-            .catch(err => {if (err) throw err});
-    }
-    if (nextStep == "Finish session") {
-        console.log(`session completed!`)
-        endConnectionToSQL();
-        return;
-    }
+        if (nextStep == "View departments, roles, or employees") {
+            // Prompt them which info they would like to view
+            viewInfoPrompt()
+                // Then capture the response and invoke the direct user from view info function
+                .then (response => {
+                    nextStep = response.itemToView;
+                    directUserFromViewInfo();
+                })
+                // If there is an error, log the error
+                .catch(err => {if (err) throw err});
+        }
+        if (nextStep == "Add new departments, roles, or employees") {
+            // Prompt them for what specific information they would like to add...
+            addInfoPrompt()
+                // Then capture the response and invoke the direct user from add info function...
+                .then (response => {
+                    nextStep = response.itemToAdd;
+                    directUserFromAddInfo();
+                })
+                // If there is an error, log the error
+                .catch(err => {if (err) throw err});
+        }
+        if (nextStep == "Update the role for an existing employee") {
+            // Prompt them for what specific information they would like to update on role, and for whom they would like to update for
+            updateInfoPrompt()
+                // Then capture the response and invoke the direct user from updtate info functoin
+                .then(response => {
+                    nextStep = response.itemToUpdate
+                    directUserFromUpdateInfo();
+                })
+                // If there is an error, log the error
+                .catch(err => {if (err) throw err});
+        }
+        if (nextStep == "Finish session") {
+            // Log to the user the session is completed..
+            console.log(`\nsession completed!\n`);
+            // And end the connectoin to the DB...
+            endConnectionToSQL();
+            return;
+        }
     }
 
 // VIEWING INFO--------------------------------------------------------------------------------------------------
@@ -446,7 +377,6 @@
             viewAll();
         }     
     }
-
         // If they want to view departments...
         function viewDepartments(){
             // Select all data from the departmenets table
@@ -455,11 +385,10 @@
                 if (err) throw err;
                 // Display the data in a table format...
                 console.table(res);
-                // Run task completed function
-                taskCompleted();
+                // Run the task completed function
+                taskComplete();
             })
         }
-
         // If they want to view roles...
         function viewRoles(){
             // Select all data from the departmenets table
@@ -468,11 +397,10 @@
                 if (err) throw err;
                 // Display the data in a table format...
                 console.table(res);
-                // Run task completed function
-                taskCompleted();
+                // Run the task completed function
+                taskComplete();
             })
         }
-
         // If they want to view employees...
         function viewEmployees(){
              // Select all data from the departmenets table
@@ -481,15 +409,14 @@
                 if (err) throw err;
                 // Display the data in a table format...
                 console.table(res);
-                // Run task completed function
-                taskCompleted();
+                // Run the task completed function
+                taskComplete();
             })
         }
-
-        // If they want to view everything together in one table (except raw ids)
+        // If they want to view all key information in a single view...
         function viewAll(){
             console.log(`viewAll function invoked`);
-               // Select all data from the departmenets table
+               // Select important data from all three tables and join them into one view
                connection.query(
                 `SELECT 
                     employee_table.employee_firstname, 
@@ -506,8 +433,8 @@
                 if (err) throw err;
                 // Display the data in a table format...
                 console.table(res);
-                // Run task completed function
-                taskCompleted();
+                // Run the task completed function
+                taskComplete();
             })
         }      
 
@@ -532,15 +459,13 @@
             let newDepartment;
             // Prompt them to answer some additional questions about what departmenet they want to add
             addDepartmentPrompt()
-                // Then capture their input in a variable and invoke the next set of stems
+                // Then capture their input in a variable and invoke the next set of steps
                 .then (response => {
                     newDepartment = response.departmentToAdd;
-                    console.log(`New departmenet you want to add is set to = ${newDepartment}`);
                     insertNewDepartment();
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
-
             // Insert the new departmenet into the departmenet table
             function insertNewDepartment() {
                 connection.query (
@@ -554,10 +479,7 @@
                     (err, res) => {
                         // If error log error
                         if (err) throw err;
-                        console.log(res);
-                        // Otherwise Log success and display the added department
-                        console.log(`You have successfully added ${newDepartment}`);
-                        // Then call the view Departmenets function to display the table and re pull up choices
+                        // Then call the view Departmenets function to display the latest data (this will also run into task completed)
                         viewDepartments();
                     }
                 )
@@ -566,16 +488,14 @@
 
         // If they want to add a role....
         function addRole() {
-            // Declare some local variables to utilize when inserting this into the DB
+            // Declare some local variables to utilize in the database insertion process
             let newRoleTitle;
             let newRoleSalary;
             let newRoleDepartment;
             let newRoleDepartmentObject;
             let newRoleDepartmentID;
-
             // Prompt them to answer some additional questions about what role they want to add..
             addRolePrompt()
-
                 // Then use the response to prepare variables for use in inserting new content to the DB...
                 .then(response => {
                     // Prepare the appropriate inputs as variables...
@@ -591,7 +511,6 @@
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
-
             // Insert the new role into the role_table
             function insertNewRole() {
                 connection.query (
@@ -609,7 +528,7 @@
                         if (err) throw err;
                         // Otherwise Log success and display the added department
                         console.log(`You have successfully added ${newRoleTitle} to the roles database!`);
-                        // Then call the view Roles function to display the table and re pull up choices
+                        // Then call the view Roles function to display the latest data (this will also run into task completed)
                         viewRoles();
                     }
                 )
@@ -623,26 +542,21 @@
             let newEmployeeLastName;
             let newEmployeeRoleObject;
             let newEmployeeRoleID;
-
             // Prompt them to answer some additional questions about what role they want to add..
             addEmployeePrompt()
-
                 // Then use the response to prepare variables for use in inserting new content to the DB...
                 .then(response => {
-
                     // Prepare the appropriate inputs as variables...
                     newEmployeeFirstName = response.newEmployeeFirstName;
                     newEmployeeLastName = response.newEmployeeLastName;
                     newEmployeeRole = response.newEmployeeRole;
                     newEmployeeRoleObject = currentRoles.find(obj=>obj.employee_role_title===newEmployeeRole);
                     newEmployeeRoleID = newEmployeeRoleObject.id;
-                   
                     // And call the function to insert the new role into the role_table...
                     insertNewEmployee();
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
-  
             // Insert the appropriate data to the DB...
             function insertNewEmployee() {
                 connection.query (
@@ -661,7 +575,7 @@
                         if (err) throw err;
                         // Otherwise give a success message to the user
                         console.log(`You have added ${newEmployeeFirstName} ${newEmployeeLastName} to the employee database!`);
-                        // Then call the view All function so they can see the added value
+                        // Then call the view All function so they can see the results of their added employee reflected in the table
                         viewAll();
                     }
                 )
@@ -673,8 +587,7 @@
 
     // If they chose to update employee role...
     function directUserFromUpdateInfo () {
-        console.log(`Direct user from update info functoin invoked`);
-        if (nextStep == "An employee's role") {
+        if (nextStep == "The role for an existing employee") {
             updateEmployeeRole();
         }
     }
@@ -682,56 +595,39 @@
         function updateEmployeeRole() {
             // Declare some local variables to utilize when updating this into the DB
             let updatedRole;
-            let employeeToUpdate;
+            let updatedEmployee;
             let updatedEmployeeObject;
             let updatedEmployeeID;
-            let updatedRoleObject
-            let updatedDepartmentID;
-            let updatedDepartmentObject;
-            let updatedDepartmentName;
-          
+            let updatedRoleObject;
+            let updatedRoleID;
             // Prompt them to answer some additoinal questions about who's role they want to update, and what role they want to change
             updateEmployeeRolePrompt()
-
                 // Then use the response to prepare variables for use in updating new content to the DB
                 .then(response => {
                     // Identify the new role that I will assign to an existing employee...
                     updatedRole = response.EmployeeUpdatedRole;
-                        console.log(`The updated role I will assign this employee is ${updatedRole}`);
                     // Identify the employee for whom's role I need to update...
-                    employeeToUpdate = response.EmployeeToUpdate;
-                        console.log(`The employee for whom's role I will update is ${employeeToUpdate}`);
-                    // Identify the id for the employee for whom's role I need to update
+                    updatedEmployee = response.EmployeeToUpdate;
+                    // Identify the id for the employee for whom's role I need to update (I need this later to target this employee in the db)
                         // Split the full name into two strings, a first adn a last name
-                        let splitNameArray = employeeToUpdate.split(" ");
+                        let splitNameArray = updatedEmployee.split(" ");
                         // Set first and last name into separate variables to use in mapping to the right id
                         let employeeFirstname = splitNameArray[0];  
                         let employeeLastname = splitNameArray [1]; 
                         // Find the the employee from the existing array of employees I get during init / task completed (returns an object for that employee)
                         updatedEmployeeObject = currentEmployees.find(obj=>obj.employee_firstname===employeeFirstname && obj.employee_lastname===employeeLastname);
-                        // Get the id for that employee from the employee table
+                        // And Get the id for that employee from the employee table so we know where to update the role
                         updatedEmployeeID = updatedEmployeeObject.id;
-                            console.log(`The employee's id is ${updatedEmployeeID}`);
-                    // Find the role from the roles table that I am going to assign to the employee
+                    // Find the role object from the roles table that I am going to assign to the employee
                     updatedRoleObject = currentRoles.find(obj=>obj.employee_role_title===updatedRole);
-                        console.log(`The full object for the role I am going to update for this employee is ${JSON.stringify(updatedRoleObject)}`)
-                    // Get the id for that role from the eixsting array of roles I get during the init / task completed function
+                    // Get the id for the role I am updating for the employee
                     updatedRoleID = updatedRoleObject.id;
-                    // Get teh departmenet id from that role
-                    updatedDepartmentID = updatedRoleObject.department_id;
-                        console.log (`departmentid is ${updatedDepartmentID}`);
-                    // Identify the departmenet that holds the role I will updated for this employee
-                        // get the department object from the departmenet table
-                        updatedDepartmentObject = currentDepartments.find(obj=>obj.id===updatedDepartmentID);
-                        updatedDepartmentName = updatedDepartmentObject.department_name;
-                            console.log(`This employee will also now belong to ${updatedDepartmentName}`);
                     // Call the function to update the employee information...
                     insertUpdatedEmployeeRole();
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
-            
-            // Insert the updated information (New role must be updated, and also department must be updated based on the role they are now in)
+            // Insert the updated information
             function insertUpdatedEmployeeRole() {
                 connection.query (
                     // Update the role volue for the specified employee
@@ -751,7 +647,6 @@
                         viewAll();
                     }
                 )
-
             }
         }
 
