@@ -2,26 +2,24 @@
 // IMPORT DEPENDENCIES & DEFINE GLOBAL VARIABLES
 //-------------------------------------------------------------------------------------------------------------
 
-    // Import required 3rd Party Node Libraries
+    // IMPORT REQUIRED THIRD PARTY DEPENDENCIES
         const mysql = require('mysql');
         const inquirer = require('inquirer');
 
-    // DEFINE GLOBAL VARIABLES
-        let nextStep; // This will be set through the program to direct users to the next appropriate functoins based on inputs in inquirer 
-        let currentDepartments = []; // This is set in the init function to hold the latest view of Department names & ids to be used in the add role function later
-        let currentDepartmentNames; // This is set in the init function to specifically hold the list of names to be used in the add role prompt
-        let currentRoles = []; // This is set in the init function to hold the latest view of Department names & ids to be used in the add role function later
-        let currentRoleNames; // This is set in the initi function (and task completed function) to hold the latest list of role names for use in creating a new employee
-        let currentEmployees; // This is set in the init functoin to hold the latest view of employees from the DB
-        let currentEmployeeNames = []; // This is set in the init function to hold the latest list of employee names first+last
+    // DEFINE GLOBAL VARIABLES - variables used to support various functions and prompts within the program sequence. Always reset upon init or task complete to ensure latest data
+        let nextStep; 
+        let currentDepartments = []; 
+        let currentDepartmentNames; 
+        let currentRoles = []; 
+        let currentRoleNames; 
+        let currentEmployees; 
+        let currentEmployeeNames = []; 
             
-        
-
 //-------------------------------------------------------------------------------------------------------------
-// CREATE MYSQL DATABASE CONNECTION OBJECT AND RELATED CONNECTION START AND END FUNCTIONS
+// CREATE MYSQL DATABASE CONNECTION OBJECT AND FUNCTION TO TERMINATE CONNECTION WHEN USER ACTIONS ARE COMPLETED
 //-------------------------------------------------------------------------------------------------------------
 
-    // Create Connection Object
+    // Create Connection Object so it's methods can be used within the program
     const connection = mysql.createConnection ({
         // Specify host
         host: 'localhost',
@@ -34,33 +32,29 @@
         database: 'employee_tracker_db',
     });
 
-    // Function to invoke upon readiness to connect to SQL database
-    function startConnectionToSQL (){
-        connection.connect((err) => {
-            // If connection is bad log the error
-            if (err) throw err;
-            // Otherwise console log my connectoin and id...
-            console.log(`Your connection to SQL database is successful with connection id ${connection.threadId}`);
-        })
-    }
-
-    // Function to invoke upon readiness to terminate connectoin to SQL database
+    // Delcare a function to invoke upon readiness to terminate connectoin to SQL database
     function endConnectionToSQL (){
         connection.end();
         console.log(`Your connection to SQL database is has been intentionally terminated`); 
     }
 
 //-------------------------------------------------------------------------------------------------------------
-// DECLARE INIT FUNCTION AND HELPER FUNCTIONS FOR RECURRING MESSAGING OR TASKS
+// DECLARE FUNCTIONS FOR INIT & TASK COMPLETED SO THTA PROPER DATA EXISTS LOCALLY FOR ALL PROGRAM PROMPTS
 //-------------------------------------------------------------------------------------------------------------
-    // Init Function to load latest data prior to program script executing (Need to find a better way to get this async then let the start program run)
+
+// Define functions below that reset certain global variables and collect latest data from DB ahead of providing user with any prompts
+
+    // Init To Do this upon first time startup
     function init(){
+
+        clearGlobalVariables(); // Calls function declared immediatly below
         // Reset values for fluid global variables
-        nextStep="";
-        currentEmployees="";
-        currrentEmployeeNames="";
-        // Start getting first data
-        getCurrentDepartments();
+        function clearGlobalVariables(){
+            nextStep="";
+            currentEmployees="";
+            currentEmployeeNames=[];
+            getCurrentDepartments();
+        }
         // Select all data from the departmenets table and populate it as the list of availible data...
         function getCurrentDepartments(){
             connection.query(`SELECT * FROM department_table`, (err, res) => {
@@ -75,7 +69,6 @@
                 getCurrentRoles()
             })
         }
-     
         // Select all data from the departmenets table and populate it as the list of availible data...
         function getCurrentRoles () {
             connection.query(`SELECT * FROM role_table`, (err, res) => {
@@ -113,14 +106,18 @@
        
     }
 
-    // Declare choose again function to be invoked every time a user finishes a given operation
+    // Task Completed to do this every time the end of a sequence is reached (the user completes a task and is brought back to the main prompt menu)
     function taskCompleted(){
+
+        clearGlobalVariables(); // Calls function declared immediatly below
         // Reset values for fluid global variables
-        nextStep="";
-        currentEmployees="";
-        currrentEmployeeNames="";
-         // Start getting first data
-         getCurrentDepartments();
+        function clearGlobalVariables(){
+            nextStep="";
+            currentEmployees="";
+            currentEmployeeNames=[];
+            console.log(`upon initialization the current employee names are ${currentEmployeeNames}`);
+            getCurrentDepartments();
+        }
          // Select all data from the departmenets table and populate it as the list of availible data...
          function getCurrentDepartments(){
              connection.query(`SELECT * FROM department_table`, (err, res) => {
@@ -135,7 +132,6 @@
                  getCurrentRoles()
              })
          }
-      
          // Select all data from the departmenets table and populate it as the list of availible data...
          function getCurrentRoles () {
              connection.query(`SELECT * FROM role_table`, (err, res) => {
@@ -173,7 +169,6 @@
          }
     }
         
-
 //-------------------------------------------------------------------------------------------------------------
 // DECLARE INQUIRER PROMPT FUNCTIONS
 //-------------------------------------------------------------------------------------------------------------
@@ -338,7 +333,7 @@
             {
                 type: "list",
                 name: "itemToUpdate",
-                message: "What would you like to add?",
+                message: "What would you like to update?",
                 choices: [
                     "An employee's role"
                 ]
@@ -359,7 +354,7 @@
                 {
                     type: "list",
                     name: "EmployeeUpdatedRole",
-                    message: "Which role would you like to assign for this employee? If you do not see the role listed here, please be sure to add a new role from the main menu before completing this step.",
+                    message: "Which role would you like to assign for this employee? (If you do not see the role listed here, please be sure to add a new role from the main menu before completing this step).",
                     choices: currentRoleNames
                 }
             ])
@@ -369,11 +364,11 @@
 // DEFINE PROGRAM SEQUENCE
 //-------------------------------------------------------------------------------------------------------------
 
-// Run the init sequence... 
+    // Run the init sequence... 
     init();
 
-// Start the main prompt sequence
-function startMainPrompt () {
+    // Start the main prompt sequence
+    function startMainPrompt () {
     // Presnt the main prompt questions...
     mainPrompt()
     // Then capture the response in a nextStep global variable and invoke the next function to route them to the right prompt..
@@ -384,10 +379,10 @@ function startMainPrompt () {
     })
     // If there is an error, log the error
     .catch(err => {if (err) throw err});
-}
+    }
 
-// Depending on their main selection, direct them to the appropriate next steps
-function directUserFromMain () {
+    // Depending on their main selection, direct them to the appropriate next steps. Will direct down one of three main paths (viewing, adding, updating) unless finish is selected
+    function directUserFromMain () {
     if (nextStep == "View departments, roles, or employees") {
         // Prompt them which info they would like to view
         viewInfoPrompt()
@@ -429,9 +424,9 @@ function directUserFromMain () {
         endConnectionToSQL();
         return;
     }
-}
+    }
 
-    // VIEWING INFO----------------------------------------------------------------------------------------------------------------------
+// VIEWING INFO--------------------------------------------------------------------------------------------------
 
     // If they wanted to view info, determine what info they wanted to view and invoke the appropriate function to get and display the data...
     function directUserFromViewInfo() {
@@ -511,10 +506,9 @@ function directUserFromMain () {
                 // Run task completed function
                 taskCompleted();
             })
-        }            
+        }      
 
-        
-    // ADDING INFO--------------------------------------------------------------------------------------------------------------------------
+// ADDING INFO---------------------------------------------------------------------------------------------------------
 
     // If they chose to add information, determine what info they wanted to add and invoke the approropriate function to get adn display the data...
     function directUserFromAddInfo() {
@@ -672,7 +666,7 @@ function directUserFromMain () {
 
         }
 
-    // UPDATING INFO------------------------------------------------------------------------------------------------------------------------------
+// UPDATING INFO---------------------------------------------------------------------------------------------------
 
     // If they chose to update employee role...
     function directUserFromUpdateInfo () {
@@ -758,11 +752,7 @@ function directUserFromMain () {
             }
         }
 
-        
-
-
-
-    // BONUS---------------------------------------------------------------------------------------------------------------------------------------
+ // BONUS---------------------------------------------------------------------------------------------------------------------------------------
 
     // (BONUS) If they chose to remove employees...
 
