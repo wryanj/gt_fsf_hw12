@@ -19,10 +19,9 @@ INSERT INTO role_table (
     department_id
 ) VALUES
     ("Owner", 900.000, 1),
-    ("QB", 500.000, 2),
-    ("WR", 300.000, 2),
-    ("LB", 200.000, 3);
-
+    ("QB", 700.000, 2),
+    ("WR", 400.000, 2),
+    ("LB", 300.000, 3);
 
 -- Seeds for employee Table
 INSERT INTO employee_table (
@@ -35,6 +34,7 @@ INSERT INTO employee_table (
     ("Matt", "Ryan", 2, 1 ),
     ("Julio", "Jones", 3, 1),
     ("Deon", "Jones", 4, 1);
+    
 
     
 ---------------------------------------------------------------------------------------------------------------------
