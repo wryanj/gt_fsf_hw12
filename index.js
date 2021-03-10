@@ -12,8 +12,8 @@
         let currentDepartmentNames; // This is set in the init function to specifically hold the list of names to be used in the add role prompt
         let currentRoles = []; // This is set in the init function to hold the latest view of Department names & ids to be used in the add role function later
         let currentRoleNames; // This is set in the initi function (and task completed function) to hold the latest list of role names for use in creating a new employee
-        let currentEmployees;
-        let currentEmployeeNames = [];
+        let currentEmployees; // This is set in the init functoin to hold the latest view of employees from the DB
+        let currentEmployeeNames = []; // This is set in the init function to hold the latest list of employee names first+last
             
         
 
@@ -91,7 +91,7 @@
             })
         }
         function getCurrentEmployees(){
-            connection.query(`SELECT id, employee_firstname, employee_lastname FROM employee_table`, (err, res) => {
+            connection.query(`SELECT * FROM employee_table`, (err, res) => {
                 // If error log error
                 if (err) throw err;
                 // Set currentEmployees to an array of returned objects with id included
@@ -151,7 +151,7 @@
              })
          }
          function getCurrentEmployees(){
-             connection.query(`SELECT id, employee_firstname, employee_lastname FROM employee_table`, (err, res) => {
+             connection.query(`SELECT * FROM employee_table`, (err, res) => {
                  // If error log error
                  if (err) throw err;
                  // Set currentEmployees to an array of returned objects with id included
@@ -685,54 +685,71 @@ function directUserFromMain () {
         function updateEmployeeRole() {
             // Declare some local variables to utilize when updating this into the DB
             let updatedRole;
-            let updatedEmployeeRoleObject;
             let employeeToUpdate;
             let updatedEmployeeObject;
             let updatedEmployeeID;
+            let updatedRoleObject
+            let updatedDepartmentID;
+            let updatedDepartmentObject;
+            let updatedDepartmentName;
           
             // Prompt them to answer some additoinal questions about who's role they want to update, and what role they want to change
             updateEmployeeRolePrompt()
 
                 // Then use the response to prepare variables for use in updating new content to the DB
                 .then(response => {
-                    // Set the role I will update for the employee
+                    // Identify the new role that I will assign to an existing employee...
                     updatedRole = response.EmployeeUpdatedRole;
-                    // Set the employee that I need to update this role for
+                        console.log(`The updated role I will assign this employee is ${updatedRole}`);
+                    // Identify the employee for whom's role I need to update...
                     employeeToUpdate = response.EmployeeToUpdate;
-                    // Set the id for the employee I want to update the role for
+                        console.log(`The employee for whom's role I will update is ${employeeToUpdate}`);
+                    // Identify the id for the employee for whom's role I need to update
                         // Split the full name into two strings, a first adn a last name
                         let splitNameArray = employeeToUpdate.split(" ");
                         // Set first and last name into separate variables to use in mapping to the right id
                         let employeeFirstname = splitNameArray[0];  
                         let employeeLastname = splitNameArray [1]; 
-                        // Map to the id for the employee chosen
+                        // Find the the employee from the existing array of employees I get during init / task completed (returns an object for that employee)
                         updatedEmployeeObject = currentEmployees.find(obj=>obj.employee_firstname===employeeFirstname && obj.employee_lastname===employeeLastname);
+                        // Get the id for that employee from the employee table
                         updatedEmployeeID = updatedEmployeeObject.id;
-                        // Get the id for the role I want to update this employee for...
-                        updatedEmployeeRoleObject = currentRoles.find(obj=>obj.employee_role_title===updatedRole);
-                        updatedEmployeeRoleID = updatedEmployeeRoleObject.id;
+                            console.log(`The employee's id is ${updatedEmployeeID}`);
+                    // Find the role from the roles table that I am going to assign to the employee
+                    updatedRoleObject = currentRoles.find(obj=>obj.employee_role_title===updatedRole);
+                        console.log(`The full object for the role I am going to update for this employee is ${JSON.stringify(updatedRoleObject)}`)
+                    // Get the id for that role from the eixsting array of roles I get during the init / task completed function
+                    updatedRoleID = updatedRoleObject.id;
+                    // Get teh departmenet id from that role
+                    updatedDepartmentID = updatedRoleObject.department_id;
+                        console.log (`departmentid is ${updatedDepartmentID}`);
+                    // Identify the departmenet that holds the role I will updated for this employee
+                        // get the department object from the departmenet table
+                        updatedDepartmentObject = currentDepartments.find(obj=>obj.id===updatedDepartmentID);
+                        updatedDepartmentName = updatedDepartmentObject.department_name;
+                            console.log(`This employee will also now belong to ${updatedDepartmentName}`);
                     // Call the function to update the employee information...
                     insertUpdatedEmployeeRole();
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
             
-            // Insert the updated information
+            // Insert the updated information (New role must be updated, and also department must be updated based on the role they are now in)
             function insertUpdatedEmployeeRole() {
                 connection.query (
                     // Update the role volue for the specified employee
                     `UPDATE employee_table
-                     SET
-                        role_id = ${updatedEmployeeRoleID}
-                     WHERE
-                        id = ${updatedEmployeeID};`
+                    SET
+                    role_id = ${updatedRoleID}
+                    WHERE
+                    id = ${updatedEmployeeID};`
                     ,
                     // Log the result
                     (err, res) => {
                         // If error log error
                         if (err) throw err;
                         // Otherwise give a success message to the user
-                        console.log(`You have updated the role for ${employeeToUpdate} to the role of ${updatedRole}`);
+                        console.log(`Success`)
                         // Then call the view All function so they can see the added value
                         viewAll();
                     }
