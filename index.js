@@ -45,7 +45,7 @@
 // DECLARE INIT FUNCTION FOR USE IN PREPARING THE DATA NEEDED BY THE PROGRAM SEQUENCE UPON START OR TASK COMPLETION
 //-------------------------------------------------------------------------------------------------------------
 
-    // Init To Do this upon first time startup
+    // Initialize program on startup and each time a task is completed...
     function init(){
         // Call first function to trigger sequence of function calls leading to start of prompt
         clearGlobalVariables(); 
@@ -415,9 +415,8 @@
         }
         // If they want to view all key information in a single view...
         function viewAll(){
-            console.log(`viewAll function invoked`);
-               // Select important data from all three tables and join them into one view
-               connection.query(
+            // Select important data from all three tables and join them into one view
+            connection.query(
                 `SELECT 
                     employee_table.employee_firstname, 
                     employee_table.employee_lastname, 
@@ -494,11 +493,22 @@
             let newRoleDepartment;
             let newRoleDepartmentObject;
             let newRoleDepartmentID;
+            // Add and escape option to the choices array
+            currentDepartmentNames.push("I dont see my choice listed here");
+            console.log(currentDepartmentNames);
             // Prompt them to answer some additional questions about what role they want to add..
             addRolePrompt()
                 // Then use the response to prepare variables for use in inserting new content to the DB...
                 .then(response => {
-                    // Prepare the appropriate inputs as variables...
+                    // If they need to escape, let them escape...
+                    if (response.newRoleDepartment === "I dont see my choice listed here"){
+                        // Tell them to add a new department...
+                        console.log(`\nThats Ok! Please add the department you need first, then come back to adding your new role.\n`)
+                        // Re-run the startprompt
+                        startMainPrompt();
+                    }
+                    // Otherwise...Prepare the appropriate inputs as variables...
+                    else{
                     newRoleTitle = response.newRoleTitle;
                     newRoleSalary = response.newRoleSalary;
                     newRoleDepartment = response.newRoleDepartment;
@@ -508,6 +518,7 @@
                     console.log(`New role you want to add is set to = ${newRoleTitle} with salaray of ${newRoleSalary} working in the ${newRoleDepartment} department with department id ${newRoleDepartmentID}`);
                     // And call the function to insert the new role into the role_table...
                     insertNewRole();
+                    }   
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
