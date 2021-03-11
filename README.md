@@ -13,7 +13,7 @@ This assignment asks us to setup an MySQL DB and utilize that along with nodejs 
 **Demo Video For Main Application**  
 The below demo demonstrates a bit of everything, as you can see the process for adding departments, roles, employees as well as viewing information and updating existing roles for current employees (I have a standalone view information option but I included these after any add or update sequence so that the user can see their change reflected already in the DB). 
 
-In the sequence below you can see me promoting myself to QB of the dirty birds while also demoting Matty Ice to the Practice Squad. You can also see the escapes I build into prompts to ensure data is added in a way that maintains it as a relational database. The "relational" structure of this DB (which was given to us as a starting resource to follow)
+In the sequence below you can see me promoting myself to QB of the dirty birds while also demoting Matty Ice to the Practice Squad. You can also see the escapes I build into prompts to ensure data is added in a way that maintains it as a relational database. 
 
 Additional videos of each separate view, add, update functionalities can be found via access of the links to a google drive below.
 
