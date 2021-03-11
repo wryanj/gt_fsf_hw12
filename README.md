@@ -17,7 +17,7 @@ In the sequence below you can see me promoting myself to QB of the dirty birds w
 
 Additional videos of each separate view, add, update functionalities can be found via access of the links to a google drive below.
 
-![Demo](hw_12_mixed_demo.gif)
+![Demo](hw_12_demo_vid_mixed.gif)
 
 For this assignment, I did not utilize classes and constructors. I think I probably over coded this although I am confident it functions correctly. I did however utilize a very functional programming logic, as my entire script is broken into organized, mostly independent functions (see below). Had I had more time to investigate this or refactor, I would have split my functions to different pages and imported them and I would have looked further into how I should have utilized constructors and classes to be less dry in my code. I would have also reconsidered how I manage dynamically populating choices in my prompts. For this assignment I pulled latest data from the db each time a task was completed or the program was started, as this data was used to support the prompt sequences. If it were a large dataset though, this would likely not be an efficient way to do it. 
 
