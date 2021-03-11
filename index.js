@@ -222,7 +222,7 @@
                 {
                     type: "list",
                     name: "newRoleDepartment",
-                    message: "What departmenet will this role reside within? (If the department does not exist yet, please create a new department first)",
+                    message: "What departmenet will this role reside within? (If the department does not exist yet, please select that you dont see it and create a new department first)",
                     choices: currentDepartmentNames
                 }
                
@@ -256,7 +256,7 @@
                 {
                     type: "list",
                     name: "newEmployeeRole",
-                    message: "Please select the employees role (If the role does yet, please create a new role first)",
+                    message: "Please select the employees role (If the role does yet, please selecet that you dont see it and create a new role first)",
                     choices: currentRoleNames
                 },
 
@@ -495,7 +495,6 @@
             let newRoleDepartmentID;
             // Add and escape option to the choices array
             currentDepartmentNames.push("I dont see my choice listed here");
-            console.log(currentDepartmentNames);
             // Prompt them to answer some additional questions about what role they want to add..
             addRolePrompt()
                 // Then use the response to prepare variables for use in inserting new content to the DB...
@@ -553,10 +552,21 @@
             let newEmployeeLastName;
             let newEmployeeRoleObject;
             let newEmployeeRoleID;
+            // Add an escape option to the choices array
+            currentRoleNames.push("I dont see the role for this employee shown here")
             // Prompt them to answer some additional questions about what role they want to add..
             addEmployeePrompt()
                 // Then use the response to prepare variables for use in inserting new content to the DB...
                 .then(response => {
+                    // If they needed to exit to create a new role first...
+                    if (response.newEmployeeRole === "I dont see the role for this employee shown here"){
+                        // Tell them what to do next...
+                        console.log(`\n No problem! Please make sure to add the role from the main menu before coming back to create this employee!\n`);
+                        // Return them to the main prompt
+                        startMainPrompt();
+                    }
+                    // Otherwise if they had all the info they needed....
+                    else{
                     // Prepare the appropriate inputs as variables...
                     newEmployeeFirstName = response.newEmployeeFirstName;
                     newEmployeeLastName = response.newEmployeeLastName;
@@ -565,6 +575,7 @@
                     newEmployeeRoleID = newEmployeeRoleObject.id;
                     // And call the function to insert the new role into the role_table...
                     insertNewEmployee();
+                    } 
                 })
                 // If there is an error, log the error
                 .catch(err => {if (err) throw err});
@@ -585,7 +596,7 @@
                         // If error log error
                         if (err) throw err;
                         // Otherwise give a success message to the user
-                        console.log(`You have added ${newEmployeeFirstName} ${newEmployeeLastName} to the employee database!`);
+                        console.log(`\nYou have added ${newEmployeeFirstName} ${newEmployeeLastName} to the employee database!\n`);
                         // Then call the view All function so they can see the results of their added employee reflected in the table
                         viewAll();
                     }
