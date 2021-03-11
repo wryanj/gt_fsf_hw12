@@ -34,7 +34,7 @@ I used my schema and seeds file with SQL workbench to inject some test data for 
 
 **Link to google drive with videos of each individual functionality for view, add, and update** 
 
-INSER LINK
+https://drive.google.com/drive/folders/1LICourPImxMV9PMn1IwEOXINiQWJmdjK?usp=sharing 
 
 
 ## Usage
