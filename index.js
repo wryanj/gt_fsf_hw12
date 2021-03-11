@@ -190,6 +190,7 @@
                         "Owner", 
                         "Head Coach",
                         "Assistant Coach",
+                        "Backup Player",
                         "QB",
                         "RB",
                         "OL",
