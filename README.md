@@ -1,4 +1,4 @@
-# GT_fsf_hw12_employee_tracker
+# gt_fsf_hw12_employee_tracker
 ## Table of Contents
 1. [Description](#Description)
 3. [Usage](#Usage)
